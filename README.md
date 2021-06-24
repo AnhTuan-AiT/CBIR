@@ -1,67 +1,84 @@
-# Build an Image Retrieval System using Python and MySQL
+# Image Retrieval System using global feature
 
 # Acknowledgement
-The key idea and main structure of the codes are from http://www.pyimagesearch.com/2014/12/01/complete-guide-building-image-search-engine-python-opencv/
-Thanks to the site for sharing such a great tutorial for building a image search engine from scratch.
+Ý tưởng và cấu trúc code chính được tham khảo từ hai nguồn sau:
+* http://www.pyimagesearch.com/2014/12/01/complete-guide-building-image-search-engine-python-opencv/
+* https://github.com/danuzclaudes/image-retrieval-OpenCV
 
-# /opencv
-Before I start building up the system, some review on basic concepts in Computer Vision is essential. 
-Thus, I come up with the OpenCV, a tool for fast prototyping of computer vision problems. 
-OpenCV supports Python as library files; but more importantly, the official tutorial of OpenCV introduces basic 
-concepts of computer vision through its example code snippets. 
-Here are some of my learning results from OpenCV: 
- 
-● Image Handling and Pixel Accessing</p>
-OpenCV provides a wide range of functions as of processing images. Through practical 
-usage or invocation of these methods in Python, I gained a straightforward idea on pixels, 
-RGB color space, bitmaps, gray­scale images and HSV color space. 
- 
-● Color Histogram </p>
-Color histogram is a plot with pixel values (ranging from 0 to 255) in X­axis and corresponding 
-number of pixels in the image on Y­axis. Histogram calculation in OpenCV is: </p>
-</p>
-<div><i>cv2.calcHist([images], channels, mask, histSize, ranges[, hist[, accumulate]]) </i></div>
+Thư viện và phiên bản:
+* python 3.7
+* opencv-python, opencv-contrib-python, tensorflow, Keras, mysqlclient, Pillow, numpy: mới nhất
 
-# /v2
-my version of codes in /v2 is a cleaner and revised version of the CBIR system.
-It first utilizes different Python libraries (getopt) to parse the command line parameters. It also 
-supports read/write with MySQL database, instead of simply processing I/O streams on disks 
-(as csv files). 
+### Các bước cài đặt và chạy chương trình
+* Trong MySQL, tạo một cơ sở dữ liệu tên là <b>image_retrieval</b>, có lược đồ như hình <b>schema.png</b><br/>
 
-</p>
-<b>Step1: Define feature descriptor - FeatureDescriptor.py</b></p> 
-The first step is to extract feature descriptors from training datasets. I’ve chosen color 
-histograms as the feature and the generated feature vector can represent the original picture.  
- 
-Here’s the key idea of FeatureDescriptor.py: </p> 
-1. convert to HSV and initialize features to quantify and represent the image </p> 
-2. split by corners and elliptical mask </p> 
-3. construct feature list by looping through corners and extending with center </p> 
- 
-<b>Step 2: Indexing features from dataset - featureExtraction.py</b></p> 
-Now that we have our image descriptor defined, we can extract features (i.e. color 
-histograms) from each image in our dataset. This process of extracting features and storing 
-them into database is commonly called “indexing”. Thus, the index of all feature vectors, 
-representing each image, is ready to be queried. 
- 
-Here’s the key idea of feature_extraction.py: </p> 
-1. read in list of filenames for all jpg images in directory</p>  
-2. write the path and name into database </p> 
-3. extract features out using the feature descriptor and write each feature vector into database </p> 
- 
-<b>Step 3:  Retrieve index by query image - Retriever.py</b></p> 
-This step aims to compute distances or similarities between given query feature vectors and 
-indexed training feature vectors. Note that smaller distances implies more relevant images. 
-We’ll return a dictionary of top­10 ranked images’ ids.  
+* Trong file <b>Index.py</b> có 4 phương thức, điền mật khẩu của cơ sở dữ liệu cho tham số <b>passwd</b> của câu lệnh 
+MySQL.connect() trong cả 4 phương thức này
 
-Here’s the key idea of Retriever.py: </p> 
-1. read all indices from db </p> 
-2. compute distance of feature vectors between query and each row </p> 
-3. sort the dictionary, return a tuple of (id, distance) </p> 
+* Tải xuống tập dữ liệu:
+    ```
+    python prepare_dataset.py --dataset_test <Tên folder tập test> --dataset_train <Tên folder tập train>
+    ```
+    Ví dụ:
+    ```
+    python prepare_dataset.py --dataset_test test --dataset_train train
+    ```
+<br/>
+
+* Trích chọn đặc trưng và lưu vecto đặc trưng vào cơ sở dũ liệu:
+    ```
+    python feature_extraction.py --dataset <Đường dẫn thư mục tập train>
+    ```
+    Ví dụ:
+    ```
+    python feature_extraction.py --dataset D:/PersonalProjects/image-retrieval/train
+    ```
+<br/>
+
+* Truy vấn:
+    ```
+    python retrieve_index.py --query <Đường dẫn file truy vấn> --result-path <Đường dẫn thư mục tập train>
+    ```
+    Ví dụ:
+    ```
+    python retrieve_index.py --query D:/PersonalProjects/image-retrieval/test/6_test.png --result-path D:/PersonalProjects/image-retrieval/train
+    ```
+<br/>
+
+### Mô tả một số file chính
+<b>Bước 1: Định nghĩa bộ đặc tả đặc trưng - FeatureDescriptor.py</b></p> 
+
+Bước đầu tiên là trích chọn các đặc trưng từ tập dữ liệu. Nhóm chọn <b>color histograms</b> là 
+đặc trưng được trích chọn và vecto đặc trưng được sinh ra có thể biểu diễn trừu tượng bức ảnh ban đầu
+
+Đây là ý tưởng chính của FeatureDescriptor.py: </p> 
+1. Chuyển đổi sang HSV và khởi tạo các đặc trưng để định lượng và biểu diễn ảnh </p> 
+2. Chia vùng ảnh bằng mặt nạ elip và mặt nạ các góc </p> 
+3. Xây dựng danh sách đặc trưng bằng cách lặp qua các vùng đã chia </p> 
  
-<b>Step 4: Retrieval system design - retrieveIndex.py</b></p> 
+<b>Bước 2: Lập chỉ mục các đặc trưng từ tập dữ liệu - feature_extraction.py</b></p> 
+
+Sau khi có bộ đặc tả, trích chọn đặc trưng từ các ảnh trong tập dữ liệu và lưu vào cơ sở dữ liệu
  
-Here’s the key idea of retrieve_index.py: </p> 
-1. extract feature from query image </p> 
-2. perform retrieval through index table </p> 
-3. loop over results of retrieved top limit image and display the result</p> 
+Đây là ý tưởng chính của feature_extraction.py: </p> 
+1. Đọc danh sách tên file của tất cả các ảnh png trong thư mục</p>  
+2. Ghi đường dẫn và tên file vào cơ sở dữ liệu </p> 
+3. Trích xuất đặc trưng sử dụng bộ đặc tả đặc trưng và ghi vecto đặc trưng vào cơ sở dữ liệu </p> 
+ 
+<b>Bước 3:  Truy xuất chỉ mục bởi ảnh truy vấn - Retriever.py</b></p> 
+
+Bước này có mục đích tính khoảng cách hay độ tương tự giữa vecto đặc trưng của ảnh truy vấn
+với các vecto đặc trưng đã được lập chỉ mục. Khoảng cách càng nhỏ thể hiện các bức ảnh càng liên quan
+tới nhau. <br/>
+
+Đây là ý tưởng chính của Retriever.py: </p> 
+1. Đọc tất cả chỉ mục từ cơ sở dữ liệu </p> 
+2. Tính khoảng cách vecto đặc trưng của ảnh truy vấn và mỗi hàng </p> 
+3. Sắp xếp từ điển, trả về các bộ (id, khoảng cách) </p> 
+ 
+<b>Bước 4: Thiết kế hệ thống truy xuất - retrieve_index.py</b></p> 
+ 
+Đây là ý tưởng chính của retrieve_index.py: </p> 
+1. Trích chọn đặc trưng từ ảnh truy vấn </p> 
+2. Thực hiện truy xuất thông qua bảng chỉ mục </p> 
+3. Duyệt qua và hiển thị các kết quả
