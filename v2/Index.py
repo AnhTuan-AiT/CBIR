@@ -12,7 +12,7 @@ import traceback
 
 class Index:
     def write_img_path_into_Image(self, dataset):
-        db = MySQLdb.connect(user="root", passwd="dongphuong189", host="localhost", db="image_retrieval")
+        db = MySQLdb.connect(user="root", passwd="", host="localhost", db="image_retrieval")
         cursor = db.cursor()
 
         for file_id, file in enumerate(os.listdir(dataset)):
@@ -36,7 +36,7 @@ class Index:
         db.close()
 
     def read_img_path_from_Image(self):
-        db = MySQLdb.connect(user="root", passwd="dongphuong189", host="localhost", db="image_retrieval")
+        db = MySQLdb.connect(user="root", passwd="", host="localhost", db="image_retrieval")
         cursor = db.cursor()
         sql = """select * from image;"""
 
@@ -56,7 +56,7 @@ class Index:
         feature = str(feature)
         humoments_feature = str(humoments_feature)
 
-        db = MySQLdb.connect(user="root", passwd="dongphuong189", host="localhost", db="image_retrieval")
+        db = MySQLdb.connect(user="root", passwd="", host="localhost", db="image_retrieval")
         cursor = db.cursor()
 
         sql = "insert into image_index (img_id, color_histogram_feature, humoments_feature) values ('{0}','{1}','{2}')".format(
@@ -75,7 +75,7 @@ class Index:
         db.close()
 
     def read_all_features_from_Index(self):
-        db = MySQLdb.connect(user="root", passwd="dongphuong189", host="localhost", db="image_retrieval")
+        db = MySQLdb.connect(user="root", passwd="", host="localhost", db="image_retrieval")
         cursor = db.cursor()
         sql = "select * from image_index;"
 
