@@ -5,17 +5,12 @@
 # 2. write all features into Index Table
 # 3. read all freatures from Index Table
 
-# import pymysql
-# pymysql.install_as_MySQLdb()
 import MySQLdb
 import os
 import traceback
 
 
 class Index:
-    # def __init__(self):
-    #	# dont need init if no para needed?
-
     def write_img_path_into_Image(self, dataset):
         db = MySQLdb.connect(user="root", passwd="dongphuong189", host="localhost", db="image_retrieval")
         cursor = db.cursor()
@@ -24,8 +19,6 @@ class Index:
             if file.endswith('.png'):
                 file_id = file[:-4]
                 file_path = dataset + "/" + file
-                # os.path.join(dataset, file)
-                # print file_id,file[:-4],file_path
                 sql = """insert into image (img_id, file_path) values ('{0}','{1}');""".format(str(file_id), file_path)
 
                 # print(sql)
@@ -53,22 +46,24 @@ class Index:
         except Exception:
             "Error: Unable to fetch data from Image"
 
-        # print data
+        # print(data)
 
         # disconnect from server
         db.close()
-
         return data
 
-    def write_all_features_into_Index(self, file_id, feature):
+    def write_all_features_into_Index(self, img_id, feature, humoments_feature):
         feature = str(feature)
+        humoments_feature = str(humoments_feature)
 
         db = MySQLdb.connect(user="root", passwd="dongphuong189", host="localhost", db="image_retrieval")
         cursor = db.cursor()
 
-        sql = "insert into image_index (img_id, feature) values ('{0}','{1}')".format(file_id, feature)
+        sql = "insert into image_index (img_id, color_histogram_feature, humoments_feature) values ('{0}','{1}','{2}')".format(
+            img_id, feature,
+            humoments_feature)
 
-        # print sql
+        # print(sql)
 
         try:
             cursor.execute(sql)
@@ -82,8 +77,8 @@ class Index:
     def read_all_features_from_Index(self):
         db = MySQLdb.connect(user="root", passwd="dongphuong189", host="localhost", db="image_retrieval")
         cursor = db.cursor()
-
         sql = "select * from image_index;"
+
         try:
             cursor.execute(sql)
             data = cursor.fetchall()

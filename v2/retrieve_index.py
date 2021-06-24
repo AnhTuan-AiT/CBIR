@@ -43,13 +43,13 @@ feature_descriptor = FeatureDescriptor((8, 12, 3))
 query_features = feature_descriptor.describe(query_img)
 
 # perform retrieval through index file
-'''retrieves db'''
 retriever = Retriever()
 
 start = datetime.now()
 retrieval_results = retriever.search(query_features, limit=10)
 print("Search time: ")
 print(datetime.now() - start)
+print(retrieval_results)
 
 # display query image
 query_img = cv2.resize(query_img, (300, 300))
@@ -60,9 +60,6 @@ for (id, distance) in retrieval_results:
     result_file_path = os.path.abspath(result_folder_path + '/' + id + '.png')
     result = cv2.imread(result_file_path)
 
-    # print(result)
-    # print(result_file_path)
     im = cv2.resize(result, (300, 300))
     cv2.imshow("Result", im)
     cv2.waitKey(0)
-    # cv2.destroyAllWindows()
